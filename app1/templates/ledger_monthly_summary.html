@@ -80,104 +80,37 @@ cursor:pointer;
                             <td class="text-center"><label>{{ledger.opening_blnc}} {{ledger.type_of_ledger}}</label></td>
                            
                           </tr>
+                          
+                          {% for m in months %}
+                          {% for i in d1 %}
+
+                                <tr class="table-row" data-href="" >
+                                    
+                                    <td><a href="{% url 'ledger_vouchers'  ledger.id  m.id %}">{{m.month_name }}</a></td>
+                                    {% if m.month_name == i%}
+                                    
+                                        <td class=" text-center">{{debit}}</td>
+                                        <td class=" text-center">{{credit}}</td>
+                                        <td class="text-center"><label>{{closing}} 
+                                        {% if ledger.type_of_ledger == 'Dr' %} {% if deb > credit %} Dr {% else %} Cr {% endif %}
+                                        {% else %}{% if debit > cred %} Dr {% else %} Cr {% endif %}{% endif%}</label></td>
+                                    {% else %}
+                                        <td></td>
+                                        <td></td>
+                                        <td style="text-align: end;"><strong></strong></td>
+                                    {% endif %}
+                                </tr>     
+                                {% endfor %}
+                                     
+                            {% endfor %}
                             
-                           
-                                              
                             
-                            <tr class="table-row" data-href="{% url 'ledger_vouchers' ledger.id %}">
-                                <td>April</td>  <!-- if there is no voucher only ledger -->
-                                <td class=" text-center">{{debit}}</td>
-                                <td class=" text-center">{{credit}}</td>
-                                <td class="text-center"><label>{{closing}} 
-                                    {% if ledger.type_of_ledger == 'Dr' %} {% if deb > credit %} Dr {% else %} Cr {% endif %}
-                                    {% else %}{% if debit > cred %} Dr {% else %} Cr {% endif %}{% endif%}</label></td>
-
-                            </tr>
-                            <tr class="table-row" data-href="{% url 'ledger_vouchers' ledger.id %}" >
-                                <td>May</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>June</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr>
-                                <td>July</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>August</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>September</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>October</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>November</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>December</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>January</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>Febuary</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr>
-                            <tr class="table-row">
-                                <td>March</td>
-                                <td></td>
-                                <td></td>
-                                <td style="text-align: end;"><strong></strong></td>
-
-                            </tr> 
-
-
                             <tr class="table-row">
                                 <th  ><h6 class="d-flex align-items-sm-start par p-1 py-1 foot" style="margin-left: 20px;">Grand Total</h6></th>
                                 
-                                <th  style="text-align: end;">{{total_debit}}</th>
-                                <th  style="text-align: end;">{{total_credit}}</th>
-                                <th  style="text-align: end;">{{closing_balance}}&nbsp;{{type1}}</th>
+                                <th  style="text-align: end;">{{debit}}</th>
+                                <th  style="text-align: end;">{{credit}}</th>
+                                <th  style="text-align: end;">{{clb}}&nbsp;{{type1}}</th>
                                 
                             </tr>
 
@@ -188,19 +121,53 @@ cursor:pointer;
             </div>
         </div>
     </div>
-    <div class="btns justify-content-between">
-        <a href="{% url 'quit' %}" role="button" class="btn">QUIT</a>
-        <button type="button" class="btn" onclick="getSelectedRow()">SELECT</button>
-
-
-       
-        <button class="btn"  onclick="deleteRow(this)">REMOVE LINE</button>
-        <button class="btn">RESTORE LINE</a></button>
-    </div>
-
+    <table class="table1 col" style="text-align: right; margin-top: 10px;" >
+        <thead>
+            <th ><a href="{% url 'quit' %}" role="button"  class="btn" >QUIT</a></th>
+            <th><button type="button"  class="btn" onclick="myFunction()">SELECT</button></th>
+            <!-- <th><b  type="button"  class="btn p-1 px-4"  onclick="Delete()" >Delete</button></th> -->
+            <th><button type="button"  class="btn " onclick="removeSelectedRow()">REMOVE LINE</button></th>
+            <th><a href="{{ request.META.HTTP_REFERER }}" type="button"  class="btn" >RESTORE LINE</a></th>
+        </thead>
+    </table>
 
 
     <script>
+
+        function myFunction() {
+            var se = document.getElementsByClassName('table-row');
+                    se[0].style.backgroundColor = "lightblue";
+
+        }
+        var index;  
+        function getSelectedRow()
+                {
+            var table = document.getElementById("table");
+            for(var i = 1; i < table.rows.length; i++)
+            {
+                {
+                    // clear the selected from the previous selected row
+                    // the first time index is undefined
+                    if(typeof index !== "undefined"){
+                        table.rows[index].classList.toggle("selected");
+                    }
+                   
+                    index = this.rowIndex;
+                    this.classList.toggle("selected");
+                    
+
+                };
+            }
+                
+        }
+
+        getSelectedRow();
+
+        function removeSelectedRow()
+        {
+            table.deleteRow(index);
+            
+        }
         $(document).ready(function($) {
             $(".table-row").click(function() {
                 window.document.location = $(this).data("href");

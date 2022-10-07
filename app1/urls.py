@@ -658,6 +658,6 @@ urlpatterns = [
     path('group_summary',views.group_summary,name='group_summary'),
     path('ledger_monthly_summary/<id>',views.ledger_monthly_summary,name='ledger_monthly_summary'),
     path('quit',views.quit,name='quit'),
-    path('ledger_vouchers/<pk>',views.ledger_vouchers,name='ledger_vouchers'),
+    path('ledger_vouchers/<pk>/<id>',views.ledger_vouchers,name='ledger_vouchers'),
     path('vouch_delete/<pk>',views.vouch_delete,name='vouch_delete')
 ]

@@ -1,4 +1,5 @@
 from contextlib import closing
+from enum import auto
 from django.db import models
 from re import T
 
@@ -2208,4 +2209,5 @@ class Ledger_vouchers_new(models.Model):
     voucher_no=models.CharField(max_length=225)
     debit=models.IntegerField(null=True)
     credit=models.IntegerField(null=True)
-    closing_balance = models.IntegerField(null = True, blank =True)
+    
+

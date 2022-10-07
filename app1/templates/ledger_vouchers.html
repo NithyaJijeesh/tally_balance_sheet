@@ -56,9 +56,9 @@
                             <th>Voucher No.</th>
                             <th>Debit</th>
                             <th>Credit</th>
+                            <th>Action</th>
                         </tr>
-                        
-                        {% for i in voucher %}
+                       {% for i in voucher %}
                         
                         <tr class="table-row">
                             <td>{{i.date}}</td>
@@ -67,7 +67,11 @@
                             <td>{{i.voucher_no}}</td>
                             <td class="text-center">{{i.debit}}</td>
                             <td class="text-center">{{i.credit}}</td>
+                            <td><a href='/vouch_delete/{{ i.id }}' class = 'p-2'
+                                style="color: rgb(255, 255, 255) ; text-decoration: none; background-color:rgb(41, 51, 51);"><b><em>
+                                <i class="fa fa-trash"></i>&nbsp;&nbsp;DELETE</em></b></a></td>
                         </tr>
+                        
                         {% endfor %}
                         <tr>
                             <th colspan="6" class="text-right">Opening Balance :</th>
@@ -115,19 +119,65 @@
         </div>
     </div>
 
-    <div class="btns justify-content-between">
-        <a href="{% url 'quit' %}" role="button" class="btn">QUIT</a>
-        <button type="button" class="btn" onclick="getSelectedRow()">SELECT</button>
+    <table class="table1 col" style="text-align: right; margin-top: 10px; width:800px" >
+        <thead>
+            <th ><a href="{% url 'quit' %}" role="button"  class="btn" >QUIT</a></th>
+            <th><button type="button"  class="btn" onclick="myFunction()">SELECT</button></th>
+            <th><button type="button"  class="btn " onclick="removeSelectedRow()">REMOVE LINE</button></th>
+            <th><a href="{{ request.META.HTTP_REFERER }}" type="button"  class="btn" >RESTORE LINE</a></th>
+        </thead>
+    </table>
 
 
-        <button class="btn"  onclick="deleteRow(this)">REMOVE LINE</button>
-        <button class="btn">RESTORE LINE</a></button>
-    </div>
+    <script>
 
-<script>
-    $(".table .table-row ").click(function() {
-            $(".table .table-row").removeClass("table-active");
-            $(this).toggleClass("table-active");
-            });
+        var table = $('.table').DataTable();
+        
+        $('.table').on( 'click', 'tr', function () {
+            var id = table.row( this ).id();
+        
+            alert( 'Clicked row id '+id );
+        } );
+
+
+
+        function myFunction() {
+            var se = document.getElementsByClassName('table-row');
+            se[0].style.backgroundColor = "lightblue";
+                
+        }
+        function myFunction1() {
+            document.getElementById("myTable").deleteRow(0);
+            }
+        var index;  
+        function getSelectedRow()
+                {
+            var table = document.getElementById("table");
+            for(var i = 1; i < table.rows.length; i++)
+            {
+                table.rows[i].onclick = function()
+                {
+                    // clear the selected from the previous selected row
+                    // the first time index is undefined
+                    if(typeof index !== "undefined"){
+                        table.rows[index].classList.toggle("selected");
+                    }
+                   
+                    index = this.rowIndex;
+                    this.classList.toggle("selected");
+                    
+
+                };
+            }
+                
+        }
+
+        getSelectedRow();
+
+        function removeSelectedRow()
+        {
+            table.deleteRow(index);
+            
+        }
 </script>
 {% endblock %}

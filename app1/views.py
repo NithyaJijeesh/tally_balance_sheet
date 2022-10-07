@@ -10315,7 +10315,7 @@ def group_summary(request):
         current_total_debit = 0
         current_total_credit = 0
 
-        #closing = ledg =  deb = cred = credit = debit = []
+        dr =cr = []
         for led in ledger:
             
             for vouch in voucher:
@@ -10331,17 +10331,22 @@ def group_summary(request):
             debit=current_total_debit
 
             if deb > credit:
-                closing_balance = deb - credit
+                    closing_balance = deb - credit
+                    dr.append(closing_balance)
             elif credit > deb:
                     closing_balance = credit - deb
-
+                    cr.append(closing_balance)
             elif cred > debit:
                     closing_balance = cred - debit
+                    cr.append(closing_balance)
+
             else:
                     closing_balance = debit - cred
-                    
-            
+                    dr.append(closing_balance)
 
+        d = sum(dr)
+        c = sum(cr)
+            
         context = {
                     'company':comp,
                     'ledger':ledger,
@@ -10352,7 +10357,10 @@ def group_summary(request):
                     'debit' : current_total_debit,
                     'credit' :current_total_credit,
                     'closing' : closing_balance,
-                    #'ledg' : ledg,
+                    'dr':dr,
+                    'cr':cr,
+                    'd': d,
+                    'c':c,
         }
             
         return render(request,'group_summary.html',context)
@@ -10365,37 +10373,55 @@ def ledger_monthly_summary(request,id):
        
     voucher = Ledger_vouchers_new.objects.filter(ledger_id = ledger.id)
 
+    beg = comp.fin_begin.strftime('%m')
+   
+
+    mnths = Months.objects.all()
+
     current_total_debit = 0
     current_total_credit = 0
-    date1 = d2 = []
+
+    date1 = []
     for vouch in voucher:
         
         current_total_debit+=vouch.debit
         current_total_credit += vouch.credit
 
         date1.append(vouch.date)
-    
-    #d1 = date1[0].month
-    
-    #d2.append(calendar.monthrange(date1[].year,date1[].month)[0])
+        
+    d1 =[]
+    for i in range(0,len(voucher)):
+        if date1[i].strftime('%B') not in d1:
 
+            d1.append(date1[i].strftime('%B'))
+
+    
+    cl =[]
     deb = cred = 0
     if ledger.type_of_ledger == 'Dr':
         deb = ledger.opening_blnc + current_total_debit
         credit = current_total_credit
         if deb > credit:
             closing_balance = deb - credit
+            cl.append(closing_balance)
         else:
             closing_balance = credit - deb
+            cl.append(closing_balance)
+
+        
     else:
         cred = ledger.opening_blnc + current_total_credit
         debit = current_total_debit
         if cred > debit:
             closing_balance = cred - debit
+            cl.append(closing_balance)
+
         else:
             closing_balance = debit - cred
+            cl.append(closing_balance)
+        
     
-    
+    clb = cl[-1]
     context = {
         'group': group,
         'ledger' : ledger,
@@ -10406,29 +10432,44 @@ def ledger_monthly_summary(request,id):
         'debit' : current_total_debit,
         'credit' :current_total_credit,
         'closing' : closing_balance,
-        #'d1': d1,
-        #'d2':d2,
+        'date1': date1,
+        'd1':d1,
+        'beg': beg,
+        'months':mnths,
+        
+        'clb':clb,
+        
+        
         
     }
     return render(request,'ledger_monthly_summary.html',context)
 
 
 
-def ledger_vouchers(request,pk):
+def ledger_vouchers(request,pk,id):
 
+    mnth = Months.objects.all()
     ledger=tally_ledger.objects.get(id = pk)
     voucher = Ledger_vouchers_new.objects.filter(ledger_id = ledger.id)
     comp = Companies.objects.get(id = ledger.company_id)
     group= tally_group.objects.get(id=ledger.grp_id)
 
+    
+    
     current_total_debit = 0
     current_total_credit = 0
+
     d = []
+    
     for vouch in voucher:
         
         current_total_debit+=vouch.debit
         current_total_credit += vouch.credit
         d.append(vouch.date)
+
+    
+    
+
 
     begin_of_month =date(d[0].year,d[0].month,1)
     df1 = DateFormat(begin_of_month)
@@ -10457,6 +10498,8 @@ def ledger_vouchers(request,pk):
         else:
             closing_balance = debit - cred
 
+    
+
     context = {
         'group': group,
         'ledger' : ledger,
@@ -10469,6 +10512,9 @@ def ledger_vouchers(request,pk):
         'closing' : closing_balance,
         'begmonth':b,
         'endmonth' : e,
+        'month' : mnth,
+        
+        
     }
     
 
@@ -10483,7 +10529,10 @@ def vouch_delete(request,pk):
     vouch = Ledger_vouchers_new.objects.get(id = pk)
     vouch.delete()
 
-    return redirect('ledger_vouchers')
+    return redirect('group_summary')
+
+
+
 
 
 

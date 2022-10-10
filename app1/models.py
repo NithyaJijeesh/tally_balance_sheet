@@ -1,5 +1,7 @@
 from contextlib import closing
 from enum import auto
+from operator import truediv
+from unittest.util import _MAX_LENGTH
 from django.db import models
 from re import T
 
@@ -306,6 +308,8 @@ class tally_ledger(models.Model):
     balance_billbybill = models.CharField(max_length=100,null=True)
     credit_period = models.CharField(max_length=100,null=True)
     creditdays_voucher = models.CharField(max_length=100,null=True)
+    c_balance = models.IntegerField(null = True,blank = True)
+    c_type = models.CharField(max_length=100,null=True,blank = True)
 
 class ledger_cheque_demension(models.Model):
     cheque_width = models.IntegerField(null=True)
@@ -2208,6 +2212,4 @@ class Ledger_vouchers_new(models.Model):
     voucher_type=models.CharField(max_length=225,null=True)
     voucher_no=models.CharField(max_length=225)
     debit=models.IntegerField(null=True)
-    credit=models.IntegerField(null=True)
-    
-
+    credit=models.IntegerField(null = True)

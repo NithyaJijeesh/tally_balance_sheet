@@ -4,22 +4,15 @@
 {% block body %}
 
 <head>
-    <script src="jquery-3.6.0.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
     <style>
         
         thead th {
                     border: .5px solid rgba(180, 150, 150, 0.3); ;
                 }
 
-        tr .table-row{
+        .table-row{
                     cursor:pointer;
                 }
-        tr .selected{
-            background-color: rgb(216, 155, 51);
-            color: aliceblue;
-        }
         .table-row:hover{
                     background-color: rgb(216, 155, 51);
                 }
@@ -38,6 +31,8 @@
         
     </style>
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 </head>
 <body>
@@ -56,8 +51,8 @@
                    
                 </div>
                 
-                <div >
-                    <table  class="table" id = 'table'>
+                <div class="table-responsive">
+                    <table  class="table" >
                         <thead>
                         <tr>
                           <th rowspan="3" colspan="2"   class="align-middle text-white "> 
@@ -74,11 +69,11 @@
                           <th class="col-3 text-center text-white">Credit</th>
                         </tr>
                     </thead>
+                    
                     <tbody >
-                        {{d}} {{c}}
                         {% for led in ledger %}
                         
-                        <tr class="table-row clickable">                           
+                        <tr class="table-row " id = 'table'>                           
                              
                             <td colspan="2" class="fields"><a href="{% url 'ledger_monthly_summary' led.id %}">{{led.name}}</a></td>
                             
@@ -113,19 +108,18 @@
                             <td class=" text-center" id = 'cr'><b>{{led.c_balance}}</b></td>
                             {% endif %}
                             {% endif %}
-                                
                             
                         </tr>
                         
                         {% endfor %}
 
+
                         <tr id="grand">
                             <th colspan="2" ><h6 class="d-flex" style="margin-left: 20px;">Grand Total</h6></th>
                             
+                            
                             <th class ='col-3 text-center' id = 'gdr'>{{d}}</th>
                             <th class = 'col-3 text-center' id = 'gcr'>{{c}}</th>
-                            
-
                         </tr>
                     </tbody>
 
@@ -141,24 +135,83 @@
 
     
 
- 
-    <a href="{% url 'quit' %}" role="button"  class="btn" >QUIT</a>
-    <button type="button" class="btn" onclick="myFunction()">Select</button>
-    <!--<button type="button" class="btn" onclick="myFunction()">Delete</button>-->
-    <button type="button" class="btn" onclick="myFunction()" id = "remove">Remove line</button>
-    <button type="button" class="btn" onclick="myFunction()">Restore line</button>
+    <table class="table1 col" style="text-align: right; margin-top: 10px;" >
+        <thead>
+            <th ><a href="{% url 'quit' %}" role="button"  class="btn" >QUIT</a></th>
+            <th><button type="button"  class="btn" onclick="myFunction()">SELECT</button></th>
+            <!-- <th><b  type="button"  class="btn p-1 px-4"  onclick="Delete()" >Delete</button></th> -->
+            <th><button type="button"  class="btn " onclick="removeSelectedRow()">REMOVE LINE</button></th>
+            <th><a href="{{ request.META.HTTP_REFERER }}" type="button"  class="btn" >RESTORE LINE</a></th>
+        </thead>
+    </table>
 
-    <script type="text/javascript">
-        /*$('#table tbody').on('Click','tr',function(){
-            if($(this).hasClass('selected')){
-                $(this).removeClass('selected')
-            }
-            else{
-                $(this).addClass('selected')
-            }
-        })*/
 
+    <script>
+
+        function myFunction() {
+            var se = document.getElementsByClassName('table-row');
+            se[0].style.backgroundColor = "lightblue";
+                
+        }
+        var index;  
+        function getSelectedRow()
+                {
+            var table = document.getElementById("table");
+            for(var i = 1; i < table.rows.length; i++)
+            {
+                table.rows[i].onclick = function()
+                {
+                    // clear the selected from the previous selected row
+                    // the first time index is undefined
+                    if(typeof index !== "undefined"){
+                        table.rows[index].classList.toggle("selected");
+                    }
+                   
+                    index = this.rowIndex;
+                    this.classList.toggle("selected");
+                    
+
+                };
+            }
+                
+        }
+
+        getSelectedRow();
+
+        function removeSelectedRow()
+        {
+            table.deleteRow(index);
+            
+        }
+            /*var total1 = 0;
+            $('#table tr td.dr').each(function() {
+                total1 += parseInt($(this).text());
+            });
+            $('#table td .gdr').text(total1);
+
+            var total2 = 0;
+            $('#table tr td.cr').each(function() {
+                total2 += parseInt($(this).text());
+            });
+            $('#table td .gcr').text(total2);
+
+
+        var table = document.getElementById("table"),value1,value2, sumVal1 = 0 ,sumVal2 = 0;
+            
+            for(var i = 1; i < table.rows.length; i++)
+            {
+                value1 = document.getElementById("dr")
+                sumVal1 = sumVal1 + value1;
+            }
+
+            for(var i = 1; i < table.rows.length; i++)
+            {
+                value2 = document.getElementById("cr")
+                sumVal2 = sumVal2 + value2;
+            }
+            
+            document.getElementById("gdr").innerHTML = sumVal1;
+            document.getElementById("gcr").innerHTML = sumVal2;*/
 
     </script>
-    
 {% endblock %}

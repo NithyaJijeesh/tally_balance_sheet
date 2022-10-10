@@ -12,15 +12,15 @@
  .table-row{
 cursor:pointer;
 }
+.selected{
+    background-color: rgb(216, 155, 51);
+
+}
 .table-row:hover{
     background-color: rgb(216, 155, 51);
 }
-.table-row1{
-cursor:pointer;
-}
-.table-row1:hover{
-    background-color: rgb(216, 155, 51);
-}    
+
+   
 .btn{
                     background-color: rgb(41, 51, 51);
                     border: 1px,solid,cornflowerblue;
@@ -134,11 +134,15 @@ cursor:pointer;
 
     <script>
 
-        function myFunction() {
+        /*function myFunction() {
+            var table = document.getElementById('table')
             var se = document.getElementsByClassName('table-row');
-                    se[0].style.backgroundColor = "lightblue";
+                for( i= 1; i<se.length;i++){
+                    se[i].style.backgroundColor = "lightblue";
 
-        }
+                }
+
+        }*/
         var index;  
         function getSelectedRow()
                 {

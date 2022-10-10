@@ -655,9 +655,16 @@ urlpatterns = [
 
     #----------Nithya---------
 
-    path('group_summary',views.group_summary,name='group_summary'),
+    path('balancesheet_new',views.balancesheet_new,name='balancesheet_new'),
+
+    path('capital_group_summary',views.capital_group_summary,name='capital_group_summary'),
     path('ledger_monthly_summary/<id>',views.ledger_monthly_summary,name='ledger_monthly_summary'),
     path('quit',views.quit,name='quit'),
     path('ledger_vouchers/<pk>/<id>',views.ledger_vouchers,name='ledger_vouchers'),
-    path('vouch_delete/<pk>',views.vouch_delete,name='vouch_delete')
-]
+    path('vouch_delete/<pk>',views.vouch_delete,name='vouch_delete'),
+
+    path('loanl_group_summary',views.loanl_group_summary,name='loanl_group_summary'),
+
+    path('fixed_assets_group_summary',views.fixed_assets_group_summary,name = 'fixed_assets_group_summary'),
+
+]   

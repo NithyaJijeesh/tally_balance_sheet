@@ -25,7 +25,7 @@ from cgi import print_arguments
 from multiprocessing import context
 from symtable import Symbol
 from unicodedata import name
-from urllib import request
+from urllib import request, response
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.http import JsonResponse
@@ -675,7 +675,7 @@ def create_ledger(request):
                             valuation_type=valtype,rate_per_unit=rateperu,percentage_of_calcution=percalc,rond_method=rondmethod,rond_limit=roimlit,
                             gst_applicable=gstapplicbl,setalter_gstdetails=sagatdet,type_of_supply=typsupply,assessable_value=asseval,
                             appropriate_to=appropto,method_of_calculation=methcalcu,balance_billbybill=balbillbybill,credit_period=credperiod,
-                            creditdays_voucher=creditdaysvouch,company_id=t_id)
+                            creditdays_voucher=creditdaysvouch,company_id=t_id,c_balane = opnbn)
             
             ldr.save()
 
@@ -10301,9 +10301,56 @@ def Edit_Voucher_Types(request,pk):
 
 
 #------------- Nithya-------------
-#----------group summary-------------
 
-def group_summary(request):
+
+def balancesheet_new(request):
+
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        comp = Companies.objects.get(id=t_id)
+        group= tally_group.objects.filter(company_id = comp.id)
+
+        ledger=tally_ledger.objects.filter(company_id = comp.id)
+        voucher = Ledger_vouchers_new.objects.filter(company_id = comp.id)
+
+        debit_total = credit_total = dr = cr = 0
+
+        for g in group:
+            for l in ledger:
+                if l.c_type == 'Dr':
+
+                    debit_total  = debit_total + l.c_balance
+                else:
+                    credit_total = credit_total + l.c_balance
+
+                if debit_total > credit_total:
+
+                    dr = debit_total - credit_total   
+                else:
+
+                    cr = credit_total - debit_total
+            
+       
+        context = {
+            'comp' : comp,
+            'ledger': ledger,
+            'group':group,
+            'debit' : debit_total,
+            'credit' : credit_total,
+            'dr':dr,
+            'cr': cr
+
+        }
+        return render(request,'balancesheet.html',context)
+    else:
+            return redirect('/')
+
+
+
+def capital_group_summary(request):
 
         
         group= tally_group.objects.get(group_name='Capital Account')
@@ -10311,56 +10358,28 @@ def group_summary(request):
         voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
 
         ledger=tally_ledger.objects.filter(grp_id = group.id)
+        
+        debit_total = credit_total = 0
 
-        current_total_debit = 0
-        current_total_credit = 0
-
-        dr =cr = []
         for led in ledger:
             
-            for vouch in voucher:
-                    
-                current_total_debit += vouch.debit
-                current_total_credit += vouch.credit
+            if led.c_type == 'Dr':
 
-            
-            
-            deb=led.opening_blnc + current_total_debit
-            credit=current_total_credit
-            cred=led.opening_blnc + current_total_credit
-            debit=current_total_debit
-
-            if deb > credit:
-                    closing_balance = deb - credit
-                    dr.append(closing_balance)
-            elif credit > deb:
-                    closing_balance = credit - deb
-                    cr.append(closing_balance)
-            elif cred > debit:
-                    closing_balance = cred - debit
-                    cr.append(closing_balance)
-
+                debit_total  = debit_total + led.c_balance
             else:
-                    closing_balance = debit - cred
-                    dr.append(closing_balance)
+                credit_total = credit_total + led.c_balance
+           
 
-        d = sum(dr)
-        c = sum(cr)
-            
+        d = debit_total
+        c = credit_total
         context = {
                     'company':comp,
                     'ledger':ledger,
                     'group':group,
                     'voucher':voucher, 
-                    'deb':deb,
-                    'cred':cred,
-                    'debit' : current_total_debit,
-                    'credit' :current_total_credit,
-                    'closing' : closing_balance,
-                    'dr':dr,
-                    'cr':cr,
                     'd': d,
                     'c':c,
+                    
         }
             
         return render(request,'group_summary.html',context)
@@ -10403,9 +10422,11 @@ def ledger_monthly_summary(request,id):
         credit = current_total_credit
         if deb > credit:
             closing_balance = deb - credit
+            ctype = 'Dr'
             cl.append(closing_balance)
         else:
             closing_balance = credit - deb
+            ctype = 'Cr'
             cl.append(closing_balance)
 
         
@@ -10414,13 +10435,26 @@ def ledger_monthly_summary(request,id):
         debit = current_total_debit
         if cred > debit:
             closing_balance = cred - debit
+            ctype = 'Cr'
             cl.append(closing_balance)
 
         else:
             closing_balance = debit - cred
+            ctype = 'Dr'
             cl.append(closing_balance)
         
-    
+    if voucher is not None:
+        ledger.c_balance = closing_balance
+        ledger.c_type = ctype
+        ledger.save()
+    else:
+        ledger.c_balance = ledger.opening_blnc
+        if ledger.opening_blnc == 'Dr':
+            ledger.c_type = 'Dr'
+        else:
+            ledger.c_type = 'Cr'
+        ledger.save()
+
     clb = cl[-1]
     context = {
         'group': group,
@@ -10442,6 +10476,7 @@ def ledger_monthly_summary(request,id):
         
         
     }
+
     return render(request,'ledger_monthly_summary.html',context)
 
 
@@ -10498,7 +10533,6 @@ def ledger_vouchers(request,pk,id):
         else:
             closing_balance = debit - cred
 
-    
 
     context = {
         'group': group,
@@ -10520,6 +10554,73 @@ def ledger_vouchers(request,pk,id):
 
     return render(request,'ledger_vouchers.html',context)
 
+
+def loanl_group_summary(request):
+
+        group= tally_group.objects.get(group_name='Loans(Liability)')
+        comp = Companies.objects.get(id = group.company_id)
+        voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
+
+        ledger=tally_ledger.objects.filter(grp_id = group.id)
+
+        debit_total = credit_total = 0
+
+        for led in ledger:
+            
+            if led.c_type == 'Dr':
+
+                debit_total  = debit_total + led.c_balance
+            else:
+                credit_total = credit_total + led.c_balance
+           
+
+        d = debit_total
+        c = credit_total
+
+        context = {
+                    'company':comp,
+                    'ledger':ledger,
+                    'group':group,
+                    'voucher':voucher, 
+                    'd': d,
+                    'c':c,
+        }
+            
+        return render(request,'loan_l_group_summary.html',context)
+
+def fixed_assets_group_summary(request):
+
+    group= tally_group.objects.get(group_name='Fixed Assets')
+    comp = Companies.objects.get(id = group.company_id)
+    voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
+
+    ledger=tally_ledger.objects.filter(grp_id = group.id)
+
+    debit_total = credit_total = 0
+
+    for led in ledger:
+            
+        if led.c_type == 'Dr':
+
+            debit_total  = debit_total + led.c_balance
+        else:
+            credit_total = credit_total + led.c_balance
+           
+
+    d = debit_total
+    c = credit_total
+
+    context = {
+        'company':comp,
+        'ledger':ledger,
+        'group':group,
+        'voucher':voucher, 
+        'd': d,
+        'c':c,
+        }
+            
+    return render(request,'fixasset_group_summary.html',context)
+
 def quit(request):
 
     return redirect('base')
@@ -10529,7 +10630,7 @@ def vouch_delete(request,pk):
     vouch = Ledger_vouchers_new.objects.get(id = pk)
     vouch.delete()
 
-    return redirect('group_summary')
+    return redirect('capital_group_summary')
 
 
 

@@ -10313,35 +10313,27 @@ def balancesheet_new(request):
         comp = Companies.objects.get(id=t_id)
         group= tally_group.objects.filter(company_id = comp.id)
 
-        ledger=tally_ledger.objects.filter(company_id = comp.id)
-        voucher = Ledger_vouchers_new.objects.filter(company_id = comp.id)
-
-        debit_total = credit_total = dr = cr = 0
-
+        
+        blnc = total_balance.objects.filter(company_id = comp.id)
+        total = 0
         for g in group:
-            for l in ledger:
-                if l.c_type == 'Dr':
+            for b in blnc:
 
-                    debit_total  = debit_total + l.c_balance
+                if b.total_debit > b.total_credit:
+                    
+                    total = b.total_debit - b.total_credit
                 else:
-                    credit_total = credit_total + l.c_balance
+                    total = b.total_credit - b.total_credit
 
-                if debit_total > credit_total:
-
-                    dr = debit_total - credit_total   
-                else:
-
-                    cr = credit_total - debit_total
-            
+                b.total = total
+                b.save()
        
         context = {
             'comp' : comp,
-            'ledger': ledger,
             'group':group,
-            'debit' : debit_total,
-            'credit' : credit_total,
-            'dr':dr,
-            'cr': cr
+            'balance' : blnc,
+            'total':total,
+            
 
         }
         return render(request,'balancesheet.html',context)
@@ -10362,16 +10354,27 @@ def capital_group_summary(request):
         debit_total = credit_total = 0
 
         for led in ledger:
-            
-            if led.c_type == 'Dr':
 
-                debit_total  = debit_total + led.c_balance
+            led.c_balance = 0 if led.c_balance is None else led.c_balance 
+            if led.c_type == 'Dr':
+                debit_total  = debit_total +  led.c_balance
             else:
                 credit_total = credit_total + led.c_balance
            
-
+        
         d = debit_total
         c = credit_total
+
+        if total_balance.objects.filter(group_id = group.id).exists():
+            balance = total_balance.objects.get(group_id = group.id)
+            balance.total_debit = debit_total
+            balance.total_credit = credit_total
+            
+            balance.save()
+        else :
+            balance = total_balance( total_debit =debit_total, total_credit = credit_total,company = comp,group = group)
+            balance.save()
+
         context = {
                     'company':comp,
                     'ledger':ledger,
@@ -10567,6 +10570,8 @@ def loanl_group_summary(request):
 
         for led in ledger:
             
+            led.c_balance = 0 if led.c_balance is None else led.c_balance 
+
             if led.c_type == 'Dr':
 
                 debit_total  = debit_total + led.c_balance
@@ -10576,6 +10581,16 @@ def loanl_group_summary(request):
 
         d = debit_total
         c = credit_total
+
+        if total_balance.objects.filter(group_id = group.id).exists():
+            balance = total_balance.objects.get(group_id = group.id)
+            balance.total_debit = debit_total
+            balance.total_credit = credit_total
+            balance.save()
+        else :
+            balance = total_balance( total_debit =debit_total, total_credit = credit_total,company = comp,group = group)
+            balance.save()
+
 
         context = {
                     'company':comp,
@@ -10599,7 +10614,9 @@ def fixed_assets_group_summary(request):
     debit_total = credit_total = 0
 
     for led in ledger:
-            
+
+        led.c_balance = 0 if led.c_balance is None else led.c_balance 
+  
         if led.c_type == 'Dr':
 
             debit_total  = debit_total + led.c_balance
@@ -10609,6 +10626,16 @@ def fixed_assets_group_summary(request):
 
     d = debit_total
     c = credit_total
+
+    if total_balance.objects.filter(group_id = group.id).exists():
+            balance = total_balance.objects.get(group_id = group.id)
+            balance.total_debit = debit_total
+            balance.total_credit = credit_total
+            balance.save()
+    else :
+            balance = total_balance( total_debit =debit_total, total_credit = credit_total,company = comp,group = group)
+            balance.save()
+
 
     context = {
         'company':comp,

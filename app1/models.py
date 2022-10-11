@@ -2213,3 +2213,11 @@ class Ledger_vouchers_new(models.Model):
     voucher_no=models.CharField(max_length=225)
     debit=models.IntegerField(null=True)
     credit=models.IntegerField(null = True)
+
+
+class total_balance(models.Model):
+    company = models.ForeignKey(Companies,on_delete=models.CASCADE,blank=True,null=True)
+    group = models.ForeignKey(tally_group, on_delete=models.CASCADE, blank=True,null=True)
+    total_debit = models.IntegerField(null=True)
+    total_credit = models.IntegerField(null = True)
+    total= models.IntegerField(null = True) 
